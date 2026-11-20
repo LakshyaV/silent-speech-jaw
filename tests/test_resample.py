@@ -89,3 +89,18 @@ def test_timestamp_smoother_recovers_the_sensor_clock():
     assert smooth_jitter < 0.1 * raw_jitter
     assert abs(smoother.period - true_period) / true_period < 2e-3
     assert np.all(np.diff(out) > 0)
+
+
+def test_timestamp_smoother_restarts_after_an_overrun():
+    period = 1 / 208.0
+    seq = np.arange(1400)
+    true = 5.0 + seq * period
+    true[600:] += 0.060  # 60 ms of samples lost inside the sensor, before the board numbered anything
+    stamped = np.ceil(true / 0.002) * 0.002
+    flagged = np.zeros(len(seq), dtype=bool)
+    flagged[600:616] = True  # the drain pass that reported the overrun
+    carried = TimestampSmoother(period)(seq, stamped)
+    restarted = TimestampSmoother(period)(seq, stamped, flagged)
+    assert np.abs(carried - true)[600:700].max() > 0.030  # the old clock, pulled slowly across the hole
+    assert np.abs(restarted - true)[600:].max() < 0.003  # within the stamping grid from the first sample on
+    assert np.all(np.diff(restarted) > 0)

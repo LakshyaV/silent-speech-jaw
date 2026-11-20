@@ -37,7 +37,15 @@ import numpy as np
 from scipy import signal
 
 from ..config import fingerprint
-from ..io.protocol import MODE_FIFO, SENSOR_JAW, SENSOR_REF, DeviceInfo, split_sensors, to_physical
+from ..io.protocol import (
+    FLAG_FIFO_OVERRUN,
+    MODE_FIFO,
+    SENSOR_JAW,
+    SENSOR_REF,
+    DeviceInfo,
+    split_sensors,
+    to_physical,
+)
 from ..io.session import Session
 from .calibration import Calibration
 from .resample import DualResampler, TimestampSmoother
@@ -206,7 +214,9 @@ class Frontend:
                 smoother = self._smoothers.get(sensor)
                 if smoother is None:
                     smoother = self._smoothers[sensor] = TimestampSmoother(1.0 / info.odr_hz)
-                t = smoother(part["seq"], t)
+                # Samples drained after a FIFO overrun follow a hole the sequence numbers do not
+                # show; the clock is re-anchored there so the resampler sees the gap.
+                t = smoother(part["seq"], t, (part["flags"] & FLAG_FIFO_OVERRUN) != 0)
             self._resampler.push(sensor, t, accel, gyro)
         return self._process(*self._resampler.pop())
 

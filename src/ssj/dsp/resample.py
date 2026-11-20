@@ -25,6 +25,11 @@ class TimestampSmoother:
     sample period of jitter. An alpha-beta tracker over (sequence number, time)
     recovers the underlying uniform clock, including its true rate, and stays
     correct across lost frames because it advances by sequence number.
+
+    Sequence numbers only cover what the board sent. When the sensor's FIFO
+    overruns, samples are lost before they are numbered and the board flags the
+    ones it drains next; passing those as ``restart`` re-anchors the clock on
+    their stamps instead of carrying it across the hole.
     """
 
     def __init__(self, nominal_period_s: float, alpha: float = 0.02, beta: float = 2e-4):
@@ -34,15 +39,15 @@ class TimestampSmoother:
         self._seq: int | None = None
         self._time = 0.0
 
-    def __call__(self, seq: np.ndarray, t: np.ndarray) -> np.ndarray:
+    def __call__(self, seq: np.ndarray, t: np.ndarray, restart: np.ndarray | None = None) -> np.ndarray:
         out = np.empty(len(t), dtype=np.float64)
         last_seq, time_, period = self._seq, self._time, self.period
         alpha, beta = self.alpha, self.beta
         for i in range(len(t)):
             s = int(seq[i])
             observed = float(t[i])
-            if last_seq is None or s <= last_seq or s - last_seq > 2000:
-                time_ = observed  # first sample, or the stream restarted
+            if last_seq is None or s <= last_seq or s - last_seq > 2000 or (restart is not None and restart[i]):
+                time_ = observed  # first sample, a restarted stream, or samples lost before numbering
             else:
                 step = s - last_seq
                 time_ += period * step
