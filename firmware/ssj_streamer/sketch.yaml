@@ -1,0 +1,16 @@
+# arduino-cli build profile for the Arduino UNO Q (bridge transport), with pinned versions.
+#   arduino-cli compile --profile unoq firmware/ssj_streamer
+# Other boards (serial transport) need no libraries beyond their core:
+#   arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi firmware/ssj_streamer
+profiles:
+  unoq:
+    fqbn: arduino:zephyr:unoq
+    platforms:
+      - platform: arduino:zephyr (1.1.0)
+    libraries:
+      - Arduino_RouterBridge (0.4.4)
+      - Arduino_RPClite (0.3.1)
+      - MsgPack (0.4.2)
+      - ArxContainer (0.7.0)
+      - ArxTypeTraits (0.3.2)
+      - DebugLog (0.8.4)
