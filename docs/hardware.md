@@ -82,15 +82,24 @@ arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi --upload -p /dev/cu.usb
 ```bash
 ssj monitor                                   # serial transport
 ssj monitor --source tcp:<board-ip>:5555      # UNO Q relay
+ssj monitor --source replay:<session dir>     # a recording
 ```
 
 ```
 firmware 0.1.0 | fifo mode | nominal 208 Hz | accel 0.122 mg/LSB | gyro 17.50 mdps/LSB
-jaw:  208.4 Hz  jitter  0.4 ms  gap   5.1 ms  loss  0.0% | ref:  207.1 Hz  jitter  0.5 ms  gap   5.2 ms  loss  0.0%
+jaw:  209.3 Hz  jitter  3.2 ms  gap   8.0 ms  loss  0.0% | ref:  207.2 Hz  jitter  3.2 ms  gap   8.0 ms  loss  0.0%
 ```
 
-Both sensors should report close to the nominal rate with no loss. The two
-rates differ slightly because each sensor has its own oscillator; the host
-handles that. `i2c errors` above zero points to wiring; `fifo overruns` or
-`tx dropped` mean the transport cannot keep up, in which case lower
-`SSJ_ODR_CODE` to `4`.
+Both sensors should report close to the nominal rate with no loss. The rate is
+the number of samples delivered per second, so a board that falls behind shows
+up here even when every frame that does arrive is intact. The two rates differ
+slightly because each sensor has its own oscillator; the host handles that.
+
+`jitter` and `gap` describe the timestamps as the board stamps them. In FIFO
+mode that is the moment it drained the sensor, up to one pass of its loop after
+the sensor sampled, so a few milliseconds are normal; the front-end recovers the
+sensor's own clock from the stamps. `loss` counts frames that were numbered and
+never arrived.
+
+`i2c errors` above zero points to wiring; `fifo overruns` or `tx dropped` mean
+the transport cannot keep up, in which case lower `SSJ_ODR_CODE` to `4`.
