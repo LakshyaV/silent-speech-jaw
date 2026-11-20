@@ -44,7 +44,7 @@ onto a common time grid.
 | 0 | `ACCEL_FRESH` | the accelerometer value is new |
 | 1 | `GYRO_FRESH` | the gyroscope value is new |
 | 2 | `READ_ERROR` | an I2C error occurred for this sample |
-| 3 | `FIFO_OVERRUN` | the sensor FIFO overflowed before this sample: earlier samples were lost |
+| 3 | `FIFO_OVERRUN` | the sensor FIFO overflowed before this sample: earlier samples were lost without being numbered. The host restarts its clock tracker here, so the hole appears as a gap |
 | 4 | `LATE` | polled mode: more than two sample periods since the previous sample |
 
 ### `0x02` INFO (18-byte body)

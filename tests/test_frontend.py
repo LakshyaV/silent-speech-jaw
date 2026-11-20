@@ -22,6 +22,7 @@ from ssj.dsp import (
     trim_to_activity,
 )
 from ssj.io import Session
+from ssj.io.protocol import FLAG_FIFO_OVERRUN, FLAGS_OK, SENSOR_JAW, SENSOR_REF
 
 
 @pytest.fixture(scope="module")
@@ -62,6 +63,39 @@ def test_streaming_equals_batch(sim_session, processed):
     assert np.array_equal(chunked.activity, one_shot.activity)
     assert np.array_equal(chunked.rest, one_shot.rest) and np.array_equal(chunked.valid, one_shot.valid)
     assert np.array_equal(one_shot.feats, reference.feats[: len(one_shot)])
+
+
+def test_overrun_flag_exposes_the_hole(sim_session, processed):
+    _, calibration, _ = processed
+    raw, info = sim_session.raw, sim_session.info
+    intact = Frontend(FrontendConfig(), calibration).push(raw, info)
+    # The sensor FIFO overran: 180 ms of both streams were lost before the board numbered
+    # them, and the samples it drained next carry the overrun flag.
+    start = int(raw["t_us"][int(len(raw) * 0.6)])
+    lost = raw[(raw["t_us"] < start) | (raw["t_us"] >= start + 180_000)].copy()
+    for sensor in (SENSOR_JAW, SENSOR_REF):
+        index = np.flatnonzero(lost["sensor"] == sensor)
+        lost["seq"][index] = np.arange(len(index))
+        lost["flags"][index[lost["t_us"][index] >= start][:16]] |= FLAG_FIFO_OVERRUN
+    unflagged = lost.copy()
+    unflagged["flags"] = FLAGS_OK
+    out = Frontend(FrontendConfig(), calibration).push(lost, info)
+    blind = Frontend(FrontendConfig(), calibration).push(unflagged, info)
+    assert out.k0 == intact.k0 and len(out.feats) == len(intact.feats)
+
+    # The frames bridged across the hole are marked, and only those.
+    marked = (out.k0 + np.flatnonzero(~out.valid)) / 100.0
+    assert 15 <= len(marked) <= 22
+    assert marked.min() >= start * 1e-6 - 0.02 and marked.max() <= start * 1e-6 + 0.20
+    assert blind.valid.all()  # without the flag nothing downstream knows
+
+    # Past the hole the features are those of the intact stream again. With the clock
+    # carried across it they stay displaced for more than a second.
+    seconds = (out.k0 + np.arange(len(out.feats))) / 100.0
+    later = (seconds >= start * 1e-6 + 0.5) & (seconds < start * 1e-6 + 1.5)
+    scale = np.abs(intact.feats[later]).mean()
+    assert np.abs(out.feats[later] - intact.feats[later]).mean() < 0.05 * scale
+    assert np.abs(blind.feats[later] - intact.feats[later]).mean() > 0.3 * scale
 
 
 def test_relative_stream_tracks_the_jaw(sim_session, processed):
