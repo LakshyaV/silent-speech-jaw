@@ -1,0 +1,6 @@
+name: Silent Speech Jaw
+icon: 🗣️
+description: Open-vocabulary silent speech from a dual jaw/reference IMU, decoded on the board
+ports:
+  - 5555
+bricks: []

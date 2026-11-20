@@ -1,0 +1,7 @@
+numpy>=1.26
+scipy>=1.11
+pyyaml>=6.0
+onnxruntime>=1.17
+# Needed only when a GGUF model is deployed (SSJ_LLM / assets/*.gguf). The first
+# install compiles llama.cpp on the board and takes a while.
+llama-cpp-python>=0.3.2
