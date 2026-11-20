@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
@@ -89,6 +90,11 @@ def test_record_and_monitor_against_a_replayed_session(sim_root, tmp_path, capsy
     source = f"replay:{sim_root / 'sim' / 's00'}"
     assert main(["monitor", "--source", source, "--seconds", "0.3", "--interval", "0.05"]) == 0
     assert "fifo mode" in capsys.readouterr().out
+    # A stream that ends before the first report interval is still summarised.
+    assert main(["monitor", "--source", source, "--interval", "60"]) == 0
+    rates = dict(re.findall(r"(jaw|ref):\s+([\d.]+) Hz", capsys.readouterr().out))
+    assert set(rates) == {"jaw", "ref"}
+    assert all(190.0 < float(rate) < 225.0 for rate in rates.values())
     # A replayed stream has no wearer following the cues; this exercises the plumbing only.
     assert (
         main(
