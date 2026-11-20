@@ -69,3 +69,15 @@ def sim_root(tmp_path_factory, lexicon):
         session = simulate_session(texts, lexicon, seed=100 + index, clench_rate=0.1, utt_prefix="u")
         session.write(root / "sim" / f"s{index:02d}", subject="sim", session=f"s{index:02d}")
     return root
+
+
+# === dataset ===
+
+
+@pytest.fixture(scope="session")
+def dataset_dir(tmp_path_factory, sim_root, lexicon, inventory):
+    from ssj.data import build_dataset
+
+    out = tmp_path_factory.mktemp("dataset")
+    build_dataset(sim_root, out, lexicon, inventory)
+    return out
