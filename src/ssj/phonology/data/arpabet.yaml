@@ -1,0 +1,83 @@
+# Phoneme inventory and jaw-observable articulatory classes.
+#
+# Fine tokens are the 39 ARPAbet phonemes of CMUdict plus control gestures.
+# Each token belongs to exactly one articulatory class: a group of phonemes
+# whose mandible kinematics are expected to be near-identical. A jaw IMU cannot
+# sense voicing or nasality and sees tongue place only through its coupling to
+# jaw height, so e.g. P/B/M share one bilabial-closure class.
+#
+# The classes drive two things:
+#   * training - an auxiliary CTC loss on the class-marginal posterior, so the
+#     model is never punished for confusing phonemes the sensor cannot separate;
+#   * decoding - class-tied emission scores, so homophene words (pat/bat/mat)
+#     stay tied acoustically and are resolved by the language models.
+#
+# This file is the prior. `ssj inventory refine` re-derives the class map from
+# measured confusions once a recogniser has been trained.
+version: 1
+
+classes:
+  V_HIGH_FRONT: "close front vowels - jaw nearly closed, spread lips"
+  V_HIGH_BACK: "close back rounded vowels - jaw nearly closed, protruded lips"
+  V_MID_FRONT: "mid front vowels - moderate opening"
+  V_MID_CENTRAL: "mid central vowels and schwa - neutral opening"
+  V_MID_BACK: "mid back rounded vowels - moderate opening with rounding"
+  V_LOW: "open vowels - widest steady opening"
+  V_DIPHTHONG: "closing diphthongs - opening followed by a large closing glide"
+  C_BILABIAL: "bilabial closure - jaw raised until the lips seal"
+  C_LABIODENTAL: "lower lip to upper teeth - raised and slightly retracted jaw"
+  C_DENTAL: "tongue tip at the teeth - small fixed gap"
+  C_ALVEOLAR: "alveolar stops and nasal - raised jaw, brief hold"
+  C_SIBILANT: "alveolar sibilants - highest, most precise jaw position"
+  C_POSTALVEOLAR: "postalveolar fricatives and affricates - high jaw with lip rounding"
+  C_LATERAL: "lateral approximant - mid-height jaw"
+  C_RHOTIC: "rhotic approximant - mid-height jaw with slight protrusion"
+  C_VELAR: "velar closure - jaw position inherited from neighbouring vowels"
+  C_GLOTTAL: "glottal fricative - no jaw target of its own"
+  C_GLIDE: "glides - fast transition from a close posture"
+  G_CLENCH: "deliberate molar clench - isometric masseter burst used as a control gesture"
+
+phonemes:
+  # --- vowels -------------------------------------------------------------
+  - {symbol: IY, class: V_HIGH_FRONT, kind: vowel, example: beat}
+  - {symbol: IH, class: V_HIGH_FRONT, kind: vowel, example: bit}
+  - {symbol: UW, class: V_HIGH_BACK, kind: vowel, example: boot}
+  - {symbol: UH, class: V_HIGH_BACK, kind: vowel, example: book}
+  - {symbol: EH, class: V_MID_FRONT, kind: vowel, example: bet}
+  - {symbol: EY, class: V_MID_FRONT, kind: vowel, example: bait}
+  - {symbol: AH, class: V_MID_CENTRAL, kind: vowel, example: but}
+  - {symbol: ER, class: V_MID_CENTRAL, kind: vowel, example: bird}
+  - {symbol: OW, class: V_MID_BACK, kind: vowel, example: boat}
+  - {symbol: AO, class: V_MID_BACK, kind: vowel, example: bought}
+  - {symbol: AA, class: V_LOW, kind: vowel, example: father}
+  - {symbol: AE, class: V_LOW, kind: vowel, example: bat}
+  - {symbol: AY, class: V_DIPHTHONG, kind: vowel, example: bite}
+  - {symbol: AW, class: V_DIPHTHONG, kind: vowel, example: bout}
+  - {symbol: OY, class: V_DIPHTHONG, kind: vowel, example: boy}
+  # --- consonants ---------------------------------------------------------
+  - {symbol: P, class: C_BILABIAL, kind: consonant, example: pat}
+  - {symbol: B, class: C_BILABIAL, kind: consonant, example: bat}
+  - {symbol: M, class: C_BILABIAL, kind: consonant, example: mat}
+  - {symbol: F, class: C_LABIODENTAL, kind: consonant, example: fan}
+  - {symbol: V, class: C_LABIODENTAL, kind: consonant, example: van}
+  - {symbol: TH, class: C_DENTAL, kind: consonant, example: thin}
+  - {symbol: DH, class: C_DENTAL, kind: consonant, example: then}
+  - {symbol: T, class: C_ALVEOLAR, kind: consonant, example: tip}
+  - {symbol: D, class: C_ALVEOLAR, kind: consonant, example: dip}
+  - {symbol: N, class: C_ALVEOLAR, kind: consonant, example: nip}
+  - {symbol: S, class: C_SIBILANT, kind: consonant, example: sip}
+  - {symbol: Z, class: C_SIBILANT, kind: consonant, example: zip}
+  - {symbol: SH, class: C_POSTALVEOLAR, kind: consonant, example: ship}
+  - {symbol: ZH, class: C_POSTALVEOLAR, kind: consonant, example: measure}
+  - {symbol: CH, class: C_POSTALVEOLAR, kind: consonant, example: chip}
+  - {symbol: JH, class: C_POSTALVEOLAR, kind: consonant, example: jump}
+  - {symbol: L, class: C_LATERAL, kind: consonant, example: lip}
+  - {symbol: R, class: C_RHOTIC, kind: consonant, example: rip}
+  - {symbol: K, class: C_VELAR, kind: consonant, example: cap}
+  - {symbol: G, class: C_VELAR, kind: consonant, example: gap}
+  - {symbol: NG, class: C_VELAR, kind: consonant, example: sing}
+  - {symbol: HH, class: C_GLOTTAL, kind: consonant, example: hat}
+  - {symbol: W, class: C_GLIDE, kind: consonant, example: wet}
+  - {symbol: Y, class: C_GLIDE, kind: consonant, example: yet}
+  # --- control gestures ---------------------------------------------------
+  - {symbol: CLENCH, class: G_CLENCH, kind: gesture, example: "<clench>"}
