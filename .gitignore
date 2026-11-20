@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Project outputs: recordings, features, experiments, downloaded assets
+/data/
+/runs/
+/bundles/
+/assets/
+*.gguf
+*.onnx
+*.pt
+
+# Firmware build products
+firmware/**/build/
+*.elf
+*.hex
+*.bin
+!tests/fixtures/**/*.bin
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+.env

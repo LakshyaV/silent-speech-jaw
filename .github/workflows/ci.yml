@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff==0.17.6
+      - run: ruff check .
+      - run: ruff format --check .
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[serial,train,runtime,dev]"
+      - name: Test
+        run: pytest
+
+  firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: detect
+        run: echo "present=$([ -d firmware/ssj_streamer ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - uses: arduino/setup-arduino-cli@v2
+        if: steps.detect.outputs.present == 'true'
+      - name: Compile for Arduino UNO Q (bridge transport)
+        if: steps.detect.outputs.present == 'true'
+        run: |
+          arduino-cli core update-index
+          arduino-cli compile --profile unoq --warnings all firmware/ssj_streamer
+      - name: Compile for Arduino UNO R4 WiFi (serial transport)
+        if: steps.detect.outputs.present == 'true'
+        run: |
+          arduino-cli core install arduino:renesas_uno
+          arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi --warnings all firmware/ssj_streamer
+          arduino-cli compile --fqbn arduino:renesas_uno:unor4wifi --warnings all \
+            --build-property "compiler.cpp.extra_flags=-DSSJ_USE_FIFO=0" firmware/ssj_streamer

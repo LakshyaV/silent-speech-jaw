@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.dict text
+*.bin binary
+*.npz binary
+*.onnx binary
+*.gguf binary

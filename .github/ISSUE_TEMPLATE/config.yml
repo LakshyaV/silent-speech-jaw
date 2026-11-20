@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Design and rationale
+    url: https://github.com/LakshyaV/silent-speech-jaw/blob/main/docs/architecture.md
+    about: Why the pipeline is built the way it is.
