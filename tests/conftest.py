@@ -110,3 +110,18 @@ def bundle_dir(tmp_path_factory, run_dir):
     out = tmp_path_factory.mktemp("bundle")
     export_bundle(run_dir / "checkpoint.pt", out)
     return out
+
+
+# === pipeline ===
+
+
+@pytest.fixture(scope="session")
+def pipeline(bundle_dir, tmp_path_factory, lexicon):
+    """The runtime pipeline on the tiny bundle, with an n-gram built from the simulated prompts."""
+    from ssj.decode.ngram import train_ngram
+    from ssj.runtime.pipeline import Pipeline, PipelineConfig
+
+    lm = train_ngram([s.split() for s in SIM_SENTENCES] * 3, order=3, vocab=lexicon.words, extra_words=["<clench>"])
+    path = tmp_path_factory.mktemp("lm") / "lm.npz"
+    lm.save(path)
+    return Pipeline.from_directory(bundle_dir, PipelineConfig(lm=str(path)))
