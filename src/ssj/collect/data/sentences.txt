@@ -1,0 +1,200 @@
+# Built-in prompt sentences for guided recording.
+# Short, everyday utterances written for this project; one per line.
+# `ssj prompts build` selects from this pool (or any text file) by phoneme and
+# diphone coverage, so the order here does not matter.
+
+# --- greetings and social ---
+hello how are you today
+good morning everyone
+good night and sleep well
+thank you very much
+you are welcome
+nice to meet you
+see you later
+how was your day
+i am doing fine thanks
+please say that again
+excuse me for a moment
+sorry i did not hear you
+that sounds like a good idea
+i really appreciate your help
+have a great weekend
+what is your name
+my name is on the card
+it was a pleasure talking with you
+congratulations on the new job
+i missed you so much
+
+# --- needs and requests ---
+i need a glass of water
+can you help me please
+i am hungry right now
+i would like some coffee
+please open the window
+close the door behind you
+turn the lights off
+turn the volume up a little
+i need to use the bathroom
+could you bring my jacket
+please call my mother
+i want to go outside
+give me a few minutes
+can we take a short break
+i need my medicine now
+please adjust the pillow
+it is too cold in here
+it is too warm in this room
+i am feeling tired
+i want to lie down
+please wait for me
+show me the picture again
+put the book on the shelf
+bring the chair over here
+i would like to watch television
+change the channel please
+i need a pen and paper
+could you charge my phone
+pass me the blue towel
+i usually take the bus
+
+# --- questions ---
+what time is it
+where are we going
+who is at the door
+when does the show begin
+why is it so noisy
+how much does this cost
+which one do you prefer
+is dinner ready yet
+did you lock the garage
+are you coming with us
+can you hear the music
+do you know the answer
+what should we do next
+where did you put my keys
+how long will it take
+is there any juice left
+whose shoes are those
+would you like some tea
+may i ask a question
+what is the weather like
+
+# --- statements ---
+the weather is beautiful today
+it is raining outside
+the sun is shining
+i think it might snow tonight
+the train leaves at noon
+my brother lives in the city
+she works at the hospital
+they went to the beach yesterday
+we should leave early tomorrow
+the children are playing in the yard
+the dog is chasing a ball
+our neighbor has a large garden
+he teaches math at the school
+the movie was really funny
+i enjoy reading before bed
+this soup tastes delicious
+the bread is fresh from the oven
+i forgot my wallet at home
+the meeting starts at three
+i will finish the job tonight
+your voice sounds different
+that was an unusual choice
+the boy found a shiny coin
+she bought a purple jacket
+he measured the length of the room
+we heard thunder in the distance
+the baby is finally asleep
+there is a mouse in the house
+i saw a rainbow this morning
+both of them are right
+
+# --- commands for devices and apps ---
+start the timer for ten minutes
+stop the music now
+play the next song
+pause the video
+send a message to my sister
+read the last message aloud
+set an alarm for seven
+open the camera
+take a picture
+search for a recipe
+scroll down the page
+go back to the home screen
+make the text larger
+save the document
+delete that sentence
+write a short note
+check my calendar for friday
+call the doctor's office
+turn on the kitchen light
+lock the front door
+
+# --- feelings and health ---
+i feel much better now
+my head hurts a little
+my throat is very dry
+i am a bit nervous
+that makes me happy
+i am worried about the test
+i could not sleep last night
+my shoulder is sore
+i think i have a fever
+the pain is going away
+please do not worry
+everything will be okay
+i am proud of you
+that was a wonderful surprise
+i need some fresh air
+take a deep breath
+i am thirsty again
+my eyes are tired
+i feel dizzy
+thank you for staying with me
+
+# --- numbers, time and places ---
+i have three brothers and two sisters
+the store closes at nine
+my birthday is in july
+we live on the fourth floor
+it costs twenty five dollars
+the bus arrives in six minutes
+i was born in the winter
+the bank is across the street
+there are eight chairs at the table
+the park is north of the bridge
+she is sixteen years old
+i will be there by thursday
+the flight leaves in an hour
+call me at five thirty
+we need a dozen eggs
+half of the cake is gone
+the library opens at eight
+it took a thousand tries
+the first one is the best
+turn left at the corner
+
+# --- phonetically rich lines ---
+the judge chose a fair measure
+six thick thistles stuck together
+a cheerful chef chopped the cheese
+the zebra zigzagged through the zoo
+show the visitor the unusual treasure
+young boys enjoy noisy toys
+the thin feather floated north
+vision and television share a root
+a quiet voice joined the choir
+she sells shoes by the shore
+the brown cow jumped out loud
+push the wooden hook through
+both mothers breathe smoothly
+jump over the huge orange jar
+which wish should the witch choose
+long songs bring strong feelings
+the yellow yacht sailed yesterday
+five violins played very softly
+pure water poured from the fountain
+around the house the hound howled
