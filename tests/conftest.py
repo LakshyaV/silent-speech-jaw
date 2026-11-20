@@ -81,3 +81,32 @@ def dataset_dir(tmp_path_factory, sim_root, lexicon, inventory):
     out = tmp_path_factory.mktemp("dataset")
     build_dataset(sim_root, out, lexicon, inventory)
     return out
+
+
+# === training run and bundle ===
+
+
+@pytest.fixture(scope="session")
+def run_dir(tmp_path_factory, dataset_dir):
+    """A deliberately tiny training run: enough to exercise every code path."""
+    from ssj.data import AugmentConfig
+    from ssj.models import ModelConfig
+    from ssj.train.trainer import ExperimentConfig, TrainConfig, train
+
+    out = tmp_path_factory.mktemp("run")
+    config = ExperimentConfig(
+        model=ModelConfig(stem_channels=8, d_model=32, tcn_dilations=(1, 2), gru_layers=1, gru_hidden=24, dropout=0.1),
+        train=TrainConfig(epochs=3, batch_size=12, warmup_steps=4, patience=10, threads=1),
+        augment=AugmentConfig(),
+    )
+    train(dataset_dir, out, config, report=lambda message: None)
+    return out
+
+
+@pytest.fixture(scope="session")
+def bundle_dir(tmp_path_factory, run_dir):
+    from ssj.models.export import export_bundle
+
+    out = tmp_path_factory.mktemp("bundle")
+    export_bundle(run_dir / "checkpoint.pt", out)
+    return out
