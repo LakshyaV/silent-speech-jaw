@@ -143,17 +143,26 @@ def trim_to_activity(
 
 
 def session_health(t_us: np.ndarray, seq: np.ndarray, nominal_hz: float) -> dict[str, float]:
-    """Stream quality metrics for one sensor: effective rate, jitter, loss."""
+    """Stream quality metrics for one sensor: delivered rate, timestamp jitter, gaps, loss.
+
+    The rate is the number of samples delivered per second of stream, not the
+    reciprocal of a typical interval. A board that falls behind and drops whole
+    batches, or one that stamps samples on its own polling grid, produces
+    intervals that look nominal while a share of the signal is missing; counting
+    samples over elapsed time cannot be fooled that way. ``loss`` covers frames
+    that were numbered and never arrived; jitter is measured around the mean
+    period, so it describes the timestamps as the host receives them.
+    """
     if len(t_us) < 3:
-        return {"rate_hz": 0.0, "jitter_ms": 0.0, "max_gap_ms": 0.0, "loss": 1.0}
-    dt = np.diff(t_us.astype(np.float64)) * 1e-3
-    dt = dt[dt > 0]
+        return {"rate_hz": 0.0, "nominal_hz": float(nominal_hz), "jitter_ms": 0.0, "max_gap_ms": 0.0, "loss": 1.0}
+    t_ms = np.sort(t_us.astype(np.float64)) * 1e-3
+    dt = np.diff(t_ms)
+    period = float(t_ms[-1] - t_ms[0]) / (len(t_ms) - 1)
     span = float(seq.max() - seq.min()) + 1.0
-    median = float(np.median(dt)) if len(dt) else 0.0
     return {
-        "rate_hz": 1000.0 / median if median > 0 else 0.0,
+        "rate_hz": 1000.0 / period if period > 0 else 0.0,
         "nominal_hz": float(nominal_hz),
-        "jitter_ms": float(np.percentile(np.abs(dt - median), 95)) if len(dt) else 0.0,
-        "max_gap_ms": float(dt.max()) if len(dt) else 0.0,
+        "jitter_ms": float(np.percentile(np.abs(dt - period), 95)),
+        "max_gap_ms": float(dt.max()),
         "loss": float(max(0.0, 1.0 - len(seq) / span)),
     }

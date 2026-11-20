@@ -20,7 +20,9 @@ from ssj.collect import (
     save_prompts,
 )
 from ssj.collect.prompts import diphones, greedy_cover, positional_units, read_text_pool, word_drills
+from ssj.dsp import session_health
 from ssj.io import DeviceInfo, ReplaySource, Session, SessionWriter
+from ssj.io.protocol import SENSOR_JAW, SENSOR_REF, split_sensors
 from ssj.phonology import normalize_text
 from ssj.sim import ScriptItem, random_session_params, render_session, utterance_item
 from ssj.sim.articulation import open_close, rest
@@ -87,6 +89,33 @@ def test_stream_check_flags_transport_problems(sim_session):
     saturated["gyro"][10] = 32767
     assert "saturated" in check_stream(saturated, info).problems
     assert check_stream(thinned, info).advice()
+
+
+def test_stream_health_counts_delivered_samples(sim_session):
+    raw, info = sim_session.raw[:6000], sim_session.info
+    jaw = split_sensors(raw)[SENSOR_JAW]
+    # FIFO-mode timestamps sit on the board's drain grid: the typical interval says
+    # 250 Hz, the number of samples per second says 208.
+    assert np.median(np.diff(jaw["t_us"])) == 4000
+    assert session_health(jaw["t_us"], jaw["seq"], info.odr_hz)["rate_hz"] == pytest.approx(info.odr_hz, rel=0.02)
+
+    # A board that falls behind loses batches to FIFO overruns and numbers what it
+    # does send consecutively: nominal spacing inside every batch, no sequence gap,
+    # and a third of the signal missing.
+    period_us = 1e6 / info.odr_hz
+    parts = []
+    for sensor in (SENSOR_JAW, SENSOR_REF):
+        part = raw[raw["sensor"] == sensor].copy()
+        index = np.arange(len(part))
+        part["t_us"] = part["t_us"][0] + np.round(index * period_us).astype(np.int64)
+        part = part[index % 12 < 8]
+        part["seq"] = np.arange(len(part))
+        parts.append(part)
+    starved = np.concatenate(parts)
+    starved = starved[np.argsort(starved["t_us"], kind="stable")]
+    result = check_stream(starved, info)
+    assert result.problems == ["low_rate"]
+    assert result.metrics["jaw_rate_hz"] == pytest.approx(info.odr_hz * 2 / 3, rel=0.02)
 
 
 def test_utterance_check_flags_timing_problems(sim_session):
